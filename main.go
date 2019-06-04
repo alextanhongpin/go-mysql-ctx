@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"time"
 
@@ -23,7 +24,9 @@ func NewDSN() string {
 }
 
 func NewDatabase() *sql.DB {
-	db, err := sql.Open("mysql", NewDSN())
+	dsn := NewDSN()
+	fmt.Println(dsn)
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -43,7 +46,8 @@ func main() {
 	db.SetMaxIdleConns(1)
 	// db.SetConnMaxLifetime(0)
 
-	ctx, cancel := context.WithCancel(context.Background())
+	// ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	// This only works with Postgresql, not Mysql
 	// result ,err := pool.ExecContext(ctx, stmt)
@@ -64,6 +68,7 @@ func main() {
 	err = conn.QueryRowContext(ctx, "SELECT SLEEP(10)").Scan(&b)
 	if err != nil {
 		if err == context.Canceled || err == context.DeadlineExceeded {
+			fmt.Println("cancelling", rr)
 			kill(db, connectionID)
 		}
 	}
