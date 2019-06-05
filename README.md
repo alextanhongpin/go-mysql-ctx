@@ -18,3 +18,7 @@ $ make mysql
 # Remove the tmp/ directory created by Docker.
 $ make clean
 ```
+
+## References
+
+- https://medium.com/@rocketlaunchr.cloud/canceling-mysql-in-go-827ed8f83b30

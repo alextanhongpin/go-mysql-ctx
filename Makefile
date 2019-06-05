@@ -18,3 +18,6 @@ up: # Start the docker.
 
 down: # Stop the docker.
 	@docker-compose down 
+
+postgresql:
+	@go run postgresql.go

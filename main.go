@@ -23,9 +23,7 @@ func NewDSN() string {
 	return cfg.FormatDSN()
 }
 
-func NewDatabase() *sql.DB {
-	dsn := NewDSN()
-	fmt.Println(dsn)
+func NewDatabase(dsn string) *sql.DB {
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal(err)
@@ -40,7 +38,8 @@ func NewDatabase() *sql.DB {
 }
 
 func main() {
-	db := NewDatabase()
+	dsn := NewDSN()
+	db := NewDatabase(dsn)
 	defer db.Close()
 	db.SetMaxOpenConns(10)
 	db.SetMaxIdleConns(1)
@@ -57,7 +56,6 @@ func main() {
 		log.Fatal(err)
 	}
 	defer conn.Close()
-	// https://medium.com/@rocketlaunchr.cloud/canceling-mysql-in-go-827ed8f83b30
 	var connectionID string
 	err = conn.QueryRowContext(ctx, "SELECT CONNECTION_ID()").Scan(&connectionID)
 	if err != nil {
@@ -68,12 +66,11 @@ func main() {
 	err = conn.QueryRowContext(ctx, "SELECT SLEEP(10)").Scan(&b)
 	if err != nil {
 		if err == context.Canceled || err == context.DeadlineExceeded {
-			fmt.Println("cancelling", rr)
+			fmt.Println("cancelling", err)
 			kill(db, connectionID)
 		}
 	}
 	log.Println(string(b))
-
 }
 
 func kill(db *sql.DB, connID string) {
